@@ -1,0 +1,159 @@
+#!/bin/bash
+
+### DECLARE CHARACTER SETS
+ASC=( ); for i in $(seq 0 1 255); do ASC+=( $i ); done
+EXT=( ); for i in $(seq 32 1 126); do EXT+=( $i ); done; for i in $(seq 161 1 255); do EXT+=( $i ); done
+STD=( ); for i in $(seq 32 1 126); do STD+=( $i ); done
+BSF=( {A..Z} {a..z} {0..9} + / )
+CLN=( {A..Z} {a..z} {0..9} )
+LET=( {A..Z} {a..z} )
+CAP=( {A..Z} )
+LOW=( {a..z} )
+HEX=( {0..9} {A..F} )
+NUM=( {0..9} )
+OCT=( {0..7} )
+
+### DECLARE FIXED COONSTANTS
+LIL=4
+BIG=255
+DCS="CLN"
+
+### SET DEFAULT VALUES
+MIN=8
+MAX=16
+DEBUG=0
+SET=$DCS
+
+### HELP PAGE
+ShowHelp(){
+			echo "Usage: mkrndstr [OPTION]"
+			echo "Make a random string of variable length using a selected character set."
+			echo
+			echo "Arguments:"
+			echo "  -d, --debug       	Show debug data"
+			echo "  -m=NUM, --min=NUM	minimum string length (default min=$MIN, fixed min $LIL)"
+			echo "  -M=NUM, --max=NUM	maximum string length (default max=$MAX, fixed max $BIG)"
+			echo "  -s=SET, --set=SET	character set (default set=$DCS)"
+			echo "                   	  ASC	256	all characters"
+			echo "                   	  EXT	190	extended characters"
+			echo "                   	  STD	95	standard characters"
+			echo "                   	  BSF	64	chrs 0-9,A-Z,a-z,+,/"
+			echo "                   	  CLN	62	chrs 0-9,A-Z,a-z"
+			echo "                   	  LET	52	chrs A-Z,a-z"
+			echo "                   	  CAP	26	chrs A-Z"
+			echo "                   	  LOW	26	chrs a-z"
+			echo "                   	  HEX	16	chrs 0-9,A-F"
+			echo "                   	  NUM	10	chrs 0-9"
+			echo "                   	  OCT	8	chrs 0-7"
+			exit 1
+}
+
+### RANDOMIZATION METHOD
+Randomize(){
+	RSN=$RANDOM
+	let "RSN %= 240"
+	RSN=$(($RSN+16))
+	### TRASH 16-256 RANDOM NUMBERS TO INCREASE ENTROPY
+	for (( a=1; a<=$RSN; a++ )); do RND=$RANDOM; done
+}
+
+### CHECK FOR ARGUMENTS
+for ARG in $*
+do
+	### HANDLE ARGUMENTS
+	case "$ARG" in
+		### DEBUG OUTPUT
+		\-d|\-\-debug)
+			### SET DEBUG MODE
+			DEBUG=1
+			;;
+		### MIN LENGTH
+		\-m=[0-9]|\-m=[0-9][0-9]|\-m=[0-9][0-9][0-9]|\-\-min=[0-9]|\-\-min=[0-9][0-9]|\-\-min=[0-9][0-9][0-9])
+			### SET MIN LENGTH
+			TMIN=$(echo $ARG | awk -F'[=]' '{print $2}')
+			if ([ $TMIN -gt $LIL ] && [ $TMIN -lt $BIG ]); then
+				MIN=$TMIN
+			else
+				if [ $TMIN -lt $LIL ]; then TMIN=$LIL; fi
+				if [ $TMIN -gt $BIG ]; then TMIN=$BIG; fi
+			fi
+			MIN=$TMIN
+			if [ $MIN -gt $MAX ]; then MAX=$MIN; fi
+			;;
+		### MAX LENGTH
+		\-M=[0-9]|\-M=[0-9][0-9]|\-M=[0-9][0-9][0-9]|\-\-max=[0-9]|\-\-max=[0-9][0-9]|\-\-max=[0-9][0-9][0-9])
+			### SET MAX LENGTH
+			TMAX=$(echo $ARG | awk -F'[=]' '{print $2}')
+			if ([ $TMAX -gt $LIL ] && [ $TMAX -lt $BIG ]); then
+				MAX=$TMAX
+			else
+				if [ $TMAX -lt $LIL ]; then TMAX=$LIL; fi
+				if [ $TMAX -gt $BIG ]; then TMAX=$BIG; fi
+			fi
+			MAX=$TMAX
+			if [ $MIN -gt $MAX ]; then MIN=$MAX; fi
+			;;
+		### CHARACTER SET
+		\-s=[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]|\-\-set=[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9])
+			### PASS CHARACTER SET
+			SET=$(echo $ARG | awk -F'[=]' '{print $2}' | awk '{print toupper($0)}')
+			;;
+		### ELSE
+		*)
+			### SHOW HELP MENU
+			ShowHelp
+			;;
+	esac
+done
+
+### SELECT CHARACTER SET
+case "$SET" in
+	ASC) SCS=(${ASC[*]});;
+	EXT)	SCS=(${EXT[*]});;
+	STD)	SCS=(${STD[*]});;
+	BSF)	SCS=(${BSF[*]});;
+	CLN)	SCS=(${CLN[*]});;
+	LET)	SCS=(${LET[*]});;
+	CAP)	SCS=(${CAP[*]});;
+	LOW)	SCS=(${LOW[*]});;
+	HEX)	SCS=(${HEX[*]});;
+	NUM)	SCS=(${NUM[*]});;
+	OCT)	SCS=(${OCT[*]});;
+	*)
+		echo "ERROR: character set [$SET] unknown!"
+		exit 1
+		;;
+esac
+SCC=${#SCS[@]}
+
+### FIND RANDOM STRING LENGTH
+Randomize
+RND=$RANDOM
+DIF=$(($MAX-$MIN+1))
+let "RND %= $DIF"
+LEN=$(($MIN+$RND))
+
+### SHOW DEBUG INFORMATION
+if [ $DEBUG -eq 1 ]; then
+	echo "Mininum string length is $MIN"
+	echo "Maximum string length is $MAX"
+	echo "Character set is $SET with $SCC possible values"
+	echo "Random string length is $LEN"
+fi
+
+### CREATE RANDOM STRING
+OUT=()
+for (( i=1; i<=$LEN; i++ ))
+do
+	### FIND RANDOM CHARACTER
+	Randomize
+	RND=$RANDOM
+	let "RND %= $SCC"
+	if ( [[ $SET != "ASC" ]] && [[ $SET != "EXT" ]] && [[ $SET != "STD" ]] ); then
+		printf ${SCS[$RND]}
+	else
+		printf \\$(printf '%03o' ${SCS[$RND]})
+	fi
+done
+echo
+exit 0
