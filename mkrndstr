@@ -26,7 +26,7 @@ SET=$DCS
 
 ### HELP PAGE
 ShowHelp(){
-			echo "Usage: mkrndstr [OPTION]"
+			echo "Usage: ./mkrndstr [OPTION]"
 			echo "Make a random string of variable length using a selected character set."
 			echo
 			echo "Arguments:"
