@@ -109,16 +109,16 @@ done
 ### SELECT CHARACTER SET
 case "$SET" in
 	ASC) SCS=(${ASC[*]});;
-	EXT)	SCS=(${EXT[*]});;
-	STD)	SCS=(${STD[*]});;
-	BSF)	SCS=(${BSF[*]});;
-	CLN)	SCS=(${CLN[*]});;
-	LET)	SCS=(${LET[*]});;
-	CAP)	SCS=(${CAP[*]});;
-	LOW)	SCS=(${LOW[*]});;
-	HEX)	SCS=(${HEX[*]});;
-	NUM)	SCS=(${NUM[*]});;
-	OCT)	SCS=(${OCT[*]});;
+	EXT) SCS=(${EXT[*]});;
+	STD) SCS=(${STD[*]});;
+	BSF) SCS=(${BSF[*]});;
+	CLN) SCS=(${CLN[*]});;
+	LET) SCS=(${LET[*]});;
+	CAP) SCS=(${CAP[*]});;
+	LOW) SCS=(${LOW[*]});;
+	HEX) SCS=(${HEX[*]});;
+	NUM) SCS=(${NUM[*]});;
+	OCT) SCS=(${OCT[*]});;
 	*)
 		echo "ERROR: character set [$SET] unknown!"
 		exit 1
